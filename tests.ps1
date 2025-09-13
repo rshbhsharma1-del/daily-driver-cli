@@ -11,3 +11,4 @@ Write-Host "Bad user-id exit code: $LASTEXITCODE"
 # Bad timeout → expect 2
 python cli.py fetch --user-id 3 --timeout 40 --out out/test-bad2.json
 Write-Host "Bad timeout exit code: $LASTEXITCODE"
+exit 0

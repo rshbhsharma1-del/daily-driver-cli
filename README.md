@@ -39,3 +39,30 @@ $LASTEXITCODE
 # Bad timeout â†’ exit 2
 python cli.py fetch --user-id 3 --timeout 40 --out out/data.json
 $LASTEXITCODE
+## Run (FastAPI) + Logging
+
+# Start API (venv required)
+cd C:\Users\rshbh\daily-driver-cli
+.\.venv\Scripts\Activate.ps1
+python -m uvicorn main:app --reload
+
+# Smoke tests (new window)
+curl http://127.0.0.1:8000/health
+curl -Method POST "http://127.0.0.1:8000/process" `
+  -Headers @{ "Content-Type" = "application/json" } `
+  -Body '{"user_id":1,"timeout":5}'
+
+# Expected logs in server window
+# INFO health_check ok=true
+# INFO process_in user_id=1 timeout=5
+# INFO process_out status=ok
+## Day 9 – /version & test
+
+Run (dev server):
+.\.venv\Scripts\Activate.ps1
+python -m uvicorn main:app --reload
+
+Checks:
+curl http://127.0.0.1:8000/version
+powershell -File .\tests_day9.ps1
+$LASTEXITCODE   # expect 0

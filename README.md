@@ -75,3 +75,12 @@ Run:
 Test:
 3) (Invoke-WebRequest http://127.0.0.1:8000/health).Headers["X-Process-Time-ms"]
 4) Set-ExecutionPolicy -Scope Process Bypass; powershell -File .\tests_day10.ps1
+## Day 10 – /ping (UTC timestamp)
+
+Run:
+1) .\.venv\Scripts\Activate.ps1
+2) python -m uvicorn main:app --reload
+
+Test:
+3) curl http://127.0.0.1:8000/ping
+4) Set-ExecutionPolicy -Scope Process Bypass; powershell -File .\tests_day10_ping.ps1

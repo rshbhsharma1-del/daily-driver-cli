@@ -28,6 +28,11 @@ def health():
     log.info("health_check ok=true")
     return {"ok": True}
 
+from datetime import datetime, timezone
+
+@app.get("/ping")
+def ping():
+    return {"pong": True, "ts": datetime.now(timezone.utc).isoformat()}
 
 
 class ProcessInput(BaseModel):

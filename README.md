@@ -56,7 +56,7 @@ curl -Method POST "http://127.0.0.1:8000/process" `
 # INFO health_check ok=true
 # INFO process_in user_id=1 timeout=5
 # INFO process_out status=ok
-## Day 9 – /version & test
+## Day 9 - /version & test
 
 Run (dev server):
 .\.venv\Scripts\Activate.ps1
@@ -66,3 +66,12 @@ Checks:
 curl http://127.0.0.1:8000/version
 powershell -File .\tests_day9.ps1
 $LASTEXITCODE   # expect 0
+## Day 10 â€“ Request Timing (X-Process-Time-ms)
+
+Run:
+1) .\.venv\Scripts\Activate.ps1
+2) python -m uvicorn main:app --reload
+
+Test:
+3) (Invoke-WebRequest http://127.0.0.1:8000/health).Headers["X-Process-Time-ms"]
+4) Set-ExecutionPolicy -Scope Process Bypass; powershell -File .\tests_day10.ps1

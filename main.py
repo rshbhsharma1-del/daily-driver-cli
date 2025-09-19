@@ -2,7 +2,9 @@
 import logging
 from pydantic import BaseModel, conint
 from fastapi import FastAPI
+from collections import defaultdict
 import logging, sys
+
 timelog = logging.getLogger("timing")
 timelog.setLevel(logging.INFO)
 if not timelog.handlers:
@@ -19,6 +21,7 @@ logging.basicConfig(
 log = logging.getLogger()
 
 app = FastAPI()
+metrics = defaultdict(int)  # simple in-memory counters
 from time import perf_counter
 
 @app.middleware("http")
@@ -28,6 +31,8 @@ async def add_timing(request, call_next):
     dt_ms = (perf_counter() - t0) * 1000
     resp.headers["X-Process-Time-ms"] = f"{dt_ms:.2f}"
     timelog.info(f"{request.method} {request.url.path} {resp.status_code} {dt_ms:.2f}ms")
+    metrics["_total"] += 1
+    metrics[request.url.path] += 1
     return resp
 
 @app.get("/health")
@@ -66,3 +71,14 @@ APP_VERSION = "0.1.0"
 @app.get("/version")
 def version():
     return {"version": APP_VERSION}
+# --- metrics endpoint (explicit, safe placement) ---
+from typing import Dict
+try:
+    metrics  # ensure counters exist if already defined
+except NameError:
+    from collections import defaultdict
+    metrics = defaultdict(int)
+
+@app.get("/metrics")
+def metrics_endpoint() -> dict:
+    return {"counts": dict(metrics)}

@@ -98,3 +98,14 @@ curl http://127.0.0.1:8000/ping
 .\tests_day10.ps1
 .\tests_day10_ping.ps1
 .\tests_day11_negative.ps1
+### Day 11 – /metrics (basic counters)
+
+Run:
+python -m uvicorn main:app --reload --log-level info
+
+Check:
+curl http://127.0.0.1:8000/metrics
+# expect: {"counts":{ "_total":N, "/metrics":M, ... }}
+
+Tests:
+.\tests_day11_metrics.ps1

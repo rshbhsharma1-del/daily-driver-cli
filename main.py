@@ -2,7 +2,14 @@
 import logging
 from pydantic import BaseModel, conint
 from fastapi import FastAPI
-
+import logging, sys
+timelog = logging.getLogger("timing")
+timelog.setLevel(logging.INFO)
+if not timelog.handlers:
+    _h = logging.StreamHandler(sys.stdout)  # force stdout
+    _h.setFormatter(logging.Formatter("%(message)s"))
+    timelog.addHandler(_h)
+    timelog.propagate = False
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s",
@@ -20,7 +27,7 @@ async def add_timing(request, call_next):
     resp = await call_next(request)
     dt_ms = (perf_counter() - t0) * 1000
     resp.headers["X-Process-Time-ms"] = f"{dt_ms:.2f}"
-    print(f"[timing] {request.method} {request.url.path} {dt_ms:.2f}ms")
+    timelog.info(f"{request.method} {request.url.path} {resp.status_code} {dt_ms:.2f}ms")
     return resp
 
 @app.get("/health")

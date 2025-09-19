@@ -84,3 +84,17 @@ Run:
 Test:
 3) curl http://127.0.0.1:8000/ping
 4) Set-ExecutionPolicy -Scope Process Bypass; powershell -File .\tests_day10_ping.ps1
+## Day 11 – Timing Log + Negative Test
+
+**What:** Compact per-request timing line (`METHOD PATH STATUS MS`) via timing logger; negative test for /process invalid input (expects 422 + "detail").
+
+**Run API:**
+python -m uvicorn main:app --reload --log-level info
+
+**Smoke:**
+curl http://127.0.0.1:8000/ping
+
+**Tests:**
+.\tests_day10.ps1
+.\tests_day10_ping.ps1
+.\tests_day11_negative.ps1

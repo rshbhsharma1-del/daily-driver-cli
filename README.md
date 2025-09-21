@@ -109,3 +109,24 @@ curl http://127.0.0.1:8000/metrics
 
 Tests:
 .\tests_day11_metrics.ps1
+## Docker — local build & run (Windows)
+
+Prereqs
+- Docker Desktop (WSL 2 backend) with Ubuntu enabled.
+- App listens on port 8000 inside the container.
+
+Build
+docker build -t daily-driver:dev .
+
+Run
+docker run --rm -p 8000:8000 daily-driver:dev
+
+Smoke tests (PowerShell)
+Invoke-RestMethod http://127.0.0.1:8000/health
+Invoke-RestMethod http://127.0.0.1:8000/ping
+Invoke-RestMethod http://127.0.0.1:8000/version
+Invoke-RestMethod http://127.0.0.1:8000/metrics
+
+Troubleshooting (from today)
+- If 'docker' is not recognized, install Docker Desktop and enable WSL 2 integration for Ubuntu.
+- If 'Windows Features' is empty or DISM shows 'Error 87 (option unknown)', repair Windows via In-Place Upgrade (keep files & apps), then retry WSL/Docker setup.

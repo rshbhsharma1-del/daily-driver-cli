@@ -130,3 +130,13 @@ Invoke-RestMethod http://127.0.0.1:8000/metrics
 Troubleshooting (from today)
 - If 'docker' is not recognized, install Docker Desktop and enable WSL 2 integration for Ubuntu.
 - If 'Windows Features' is empty or DISM shows 'Error 87 (option unknown)', repair Windows via In-Place Upgrade (keep files & apps), then retry WSL/Docker setup.
+## Error Shapes
+
+Successful `/process` (unchanged):
+```json
+{ "status": "ok", "data": { "...": "..." } }
+```
+Runtime errors (not FastAPI 422 validation):
+```json
+{ "status": "error", "req_id": "<uuid>", "error_code": "ENGINE_FAIL", "message": "…optional…" }
+```

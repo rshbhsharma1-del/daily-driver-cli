@@ -85,17 +85,39 @@ def process(payload: ProcessInput, request: Request):
         if request.headers.get("X-Debug-Force-Error") == "1":
             raise RuntimeError("forced error for test")
 
-        r = subprocess.run([sys.executable, "app.py", str(payload.user_id)],
-                           capture_output=True, text=True, check=False)
+        r = subprocess.run(
+            [sys.executable, "app.py", "--user-id", str(payload.user_id), "--timeout", str(payload.timeout)],
+            capture_output=True, text=True, check=False, timeout=payload.timeout
+        )
+        if r.returncode != 0:
+            raise RuntimeError(f"engine nonzero exit={r.returncode}: {r.stderr.strip()}")
         out = r.stdout.strip()
         data = json.loads(out) if out.startswith("{") else {"stdout": out}
         result = {"status": "ok", "req_id": req_id, "data": data}
         log.info("process_out status=%s req_id=%s", result["status"], req_id)
         return result
+    except subprocess.TimeoutExpired as e:
+        code = "ENGINE_TIMEOUT"
+        err = build_error_json(req_id, code, f"engine timed out after {e.timeout}s")
+        log.error("process_error error_code=%s req_id=%s msg=%s", code, req_id, str(e))
+        err["req_id"] = req_id
+        return JSONResponse(status_code=500, content=err)
+    except ValueError as e:
+        code = "ENGINE_BAD_OUTPUT"
+        err = build_error_json(req_id, code, str(e))
+        log.error("process_error error_code=%s req_id=%s msg=%s", code, req_id, str(e))
+        err["req_id"] = req_id
+        return JSONResponse(status_code=500, content=err)
+    except RuntimeError as e:
+        code = "ENGINE_NONZERO_EXIT"
+        err = build_error_json(req_id, code, str(e))
+        log.error("process_error error_code=%s req_id=%s msg=%s", code, req_id, str(e))
+        err["req_id"] = req_id
+        return JSONResponse(status_code=500, content=err)
     except Exception as e:
-        err = build_error_json(req_id, "ENGINE_FAIL", str(e))
-        log.error("process_error error_code=%s req_id=%s msg=%s", "ENGINE_FAIL", req_id, str(e))
-        # If your helper already puts req_id into err, the next line is redundant; safe to keep or drop.
+        code = "ENGINE_FAIL"
+        err = build_error_json(req_id, code, str(e))
+        log.error("process_error error_code=%s req_id=%s msg=%s", code, req_id, str(e))
         err["req_id"] = req_id
         return JSONResponse(status_code=500, content=err)
 

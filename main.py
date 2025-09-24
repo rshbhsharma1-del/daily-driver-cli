@@ -8,6 +8,7 @@ import uuid
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from uuid import uuid4
+from fastapi import FastAPI, Request
 
 timelog = logging.getLogger("timing")
 timelog.setLevel(logging.INFO)
@@ -33,6 +34,9 @@ def build_error_json(req_id: str, error_code: str, message: str | None = None) -
 
 app = FastAPI()
 
+def _req_id(request: Request) -> str:
+    return getattr(request.state, "req_id", request.headers.get("x-request-id", "")) or ""
+    
 @app.middleware("http")
 async def request_id_middleware(request: Request, call_next):
     req_id = request.headers.get("X-Request-Id") or str(uuid.uuid4())
@@ -74,7 +78,8 @@ class ProcessInput(BaseModel):
 
 @app.post("/process")
 def process(payload: ProcessInput, request: Request):
-    req_id = getattr(request.state, "req_id", request.headers.get("X-Request-Id", str(uuid4())))
+    # Prefer middleware’s req_id from state → header; only generate if truly missing
+    req_id = _req_id(request) or str(uuid4())
     try:
         # DEV-ONLY trigger to test error shape
         if request.headers.get("X-Debug-Force-Error") == "1":
@@ -84,12 +89,14 @@ def process(payload: ProcessInput, request: Request):
                            capture_output=True, text=True, check=False)
         out = r.stdout.strip()
         data = json.loads(out) if out.startswith("{") else {"stdout": out}
-        result = {"status": "ok", "data": data}
+        result = {"status": "ok", "req_id": req_id, "data": data}
         log.info("process_out status=%s req_id=%s", result["status"], req_id)
         return result
     except Exception as e:
         err = build_error_json(req_id, "ENGINE_FAIL", str(e))
         log.error("process_error error_code=%s req_id=%s msg=%s", "ENGINE_FAIL", req_id, str(e))
+        # If your helper already puts req_id into err, the next line is redundant; safe to keep or drop.
+        err["req_id"] = req_id
         return JSONResponse(status_code=500, content=err)
 
 

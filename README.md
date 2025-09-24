@@ -140,3 +140,29 @@ Runtime errors (not FastAPI 422 validation):
 ```json
 { "status": "error", "req_id": "<uuid>", "error_code": "ENGINE_FAIL", "message": "…optional…" }
 ```
+### Day 15 — Request ID in `/process` responses
+
+**Success**
+```json
+{"status":"ok","req_id":"<uuid>","data":{"stdout":"..."}}
+```
+
+**Error**
+```json
+{"status":"error","req_id":"<uuid>","error_code":"ENGINE_TIMEOUT|ENGINE_BAD_OUTPUT|ENGINE_NONZERO_EXIT|ENGINE_FAIL","message":"..."}
+```
+
+**Trace by req_id (PowerShell)**
+```powershell
+# Start server and tee logs to a file
+python -m uvicorn main:app --reload *| Tee-Object -FilePath .\server.log
+
+# Send with a known X-Request-Id
+$rid=[guid]::NewGuid().ToString()
+$h=@{'Content-Type'='application/json';'X-Request-Id'=$rid}
+'{"user_id":1,"timeout":5}' | Set-Content -NoNewline tmp_post.json
+irm http://127.0.0.1:8000/process -Method Post -Headers $h -InFile tmp_post.json
+
+# Grep logs for this request
+Select-String -Path .\server.log -Pattern $rid
+```

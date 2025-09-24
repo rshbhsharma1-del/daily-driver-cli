@@ -7,3 +7,5 @@ __pycache__/
 
 # Output files
 /out/
+tmp_*.json
+tmp_code.txt

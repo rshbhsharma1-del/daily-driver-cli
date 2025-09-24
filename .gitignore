@@ -9,3 +9,5 @@ __pycache__/
 /out/
 tmp_*.json
 tmp_code.txt
+main.backup.py
+test_health.ps1

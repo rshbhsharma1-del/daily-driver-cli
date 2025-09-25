@@ -11,3 +11,6 @@ tmp_*.json
 tmp_code.txt
 main.backup.py
 test_health.ps1
+# Day 16 temp artifacts
+tmp_*.json
+tmp_*.txt

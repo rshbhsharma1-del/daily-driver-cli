@@ -166,3 +166,16 @@ irm http://127.0.0.1:8000/process -Method Post -Headers $h -InFile tmp_post.json
 # Grep logs for this request
 Select-String -Path .\server.log -Pattern $rid
 ```
+### Day 16 – Test Error Codes
+Deterministic dev-only triggers via `X-Dev-Force`:
+- `ENGINE_TIMEOUT` → `.\tests_day16_timeout.ps1`
+- `ENGINE_BAD_OUTPUT` → `.\tests_day16_bad_output.ps1`
+- `ENGINE_NONZERO_EXIT` → `.\tests_day16_nonzero_exit.ps1`
+- `ENGINE_FAIL` → `.\tests_day16_engine_fail.ps1`
+
+Each script asserts:
+- `status: "error"`
+- top-level `error_code` matches the forced value
+- `req_id` in the response **body** matches `X-Request-Id` in **headers** (server-generated)
+
+Troubleshooting: see `TROUBLESHOOTING.md` (use `curl.exe`, write JSON to a temp file, and run Uvicorn from repo root).

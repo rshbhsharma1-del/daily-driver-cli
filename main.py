@@ -82,6 +82,12 @@ def process(payload: ProcessInput, request: Request):
     req_id = _req_id(request) or str(uuid4())
     try:
         # DEV-ONLY trigger to test error shape
+                # --- DEV-ONLY: deterministic error forcing for tests ---
+        dev_force = request.headers.get("X-Dev-Force")
+        if dev_force in {"ENGINE_TIMEOUT", "ENGINE_BAD_OUTPUT", "ENGINE_NONZERO_EXIT", "ENGINE_FAIL"}:
+            err = build_error_json(error_code=dev_force, message=f"forced for testing: {dev_force}", req_id=req_id)
+            return JSONResponse(status_code=200, content=err)
+        # --- /DEV-ONLY ---
         if request.headers.get("X-Debug-Force-Error") == "1":
             raise RuntimeError("forced error for test")
 
@@ -140,3 +146,4 @@ except NameError:
 @app.get("/metrics")
 def metrics_endpoint() -> dict:
     return {"counts": dict(metrics)}
+

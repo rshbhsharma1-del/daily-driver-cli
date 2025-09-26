@@ -179,3 +179,8 @@ Each script asserts:
 - `req_id` in the response **body** matches `X-Request-Id` in **headers** (server-generated)
 
 Troubleshooting: see `TROUBLESHOOTING.md` (use `curl.exe`, write JSON to a temp file, and run Uvicorn from repo root).
+## Error handling (central helper)
+
+- All error codes + JSON builder live in `errors.py`.
+- Import in handlers: `from errors import build_error_json, ERROR_CODES`.
+- Forced error testing (dev-only): send header `X-Dev-Force: <ENGINE_* code>` to `/process`.
